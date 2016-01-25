@@ -33,6 +33,9 @@ m.species[9606]
 # get internal ID for TP63
 protid = m.get_metaid('TP63')
 
+# get entry description
+m.get_description(protid)
+
 # get external IDs for internal ID
 extids = m.get_external_ids(protid)
 

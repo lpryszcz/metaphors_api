@@ -8,7 +8,7 @@ sudo apt-get install python-mysqldb python-numpy python-setuptools git ipython
 sudo easy_install wordcloud
 
 # clone metaphors_api repository
-git clone git@github.com:lpryszcz/metaphors_api.git
+git clone https://github.com/lpryszcz/metaphors_api 
 cd metaphors_api
 
 # run IPython

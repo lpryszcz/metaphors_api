@@ -4,7 +4,8 @@
 
 ```bash
 # install Python modules (MySQLdb and numpy), git and IPython
-sudo apt-get install python-mysqldb python-numpy git ipython
+sudo apt-get install python-mysqldb python-numpy python-setuptools git ipython
+sudo easy_install wordcloud
 
 # clone metaphors_api repository
 git clone git@github.com:lpryszcz/metaphors_api.git

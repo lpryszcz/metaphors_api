@@ -35,7 +35,22 @@ protid = m.get_metaid('TP63')
 # get external IDs for internal ID
 extids = m.get_external_ids(protid)
 
+# get FastA-formatted sequence 
+fasta = m.get_fasta(protid)
+## returns fasta of random sequence if no protid is provided
+
+# get gene symbol
+m.get_gene_name(protid)
+
+# get GO 
+go = m.get_GO(protid)
+go['molecular_function']
+
 # get orthologs at CS cut-off of 0.5
-orthologs = m.get_orthologs_and_paralogs(protid, cs=0.5)
+orthologs, paralogs=m.get_orthologs_and_paralogs(protid)
+# orthologs = { taxid: [ [ protid, extid, consistency_score, evidence_level, no_of_tress, db_info, co-orthologs* ] ] }
+## db_info: consistency_score and no_of_trees from PhylomeDB, Ensembl, EggNOG, OrthoMCL, TreeFAM and Hogenome
+## co-orthologs: protid and consistency_score of each co-ortholog
+* or co-paralogs for paralogs
 
 ```

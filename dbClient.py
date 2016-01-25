@@ -285,6 +285,7 @@ class metaphors(object):
 
     def get_tagcloud(self, metaid, go_terms):
         """Return html link to tag cloud"""
+        import matplotlib.pyplot as plt
         htypetxt = ""
         if type(metaid) is str:
             htypetxt = metaid.split("_")[-1]
@@ -298,9 +299,11 @@ class metaphors(object):
                     text.append(name)
             if not text:
                 return "No GO terms found!"
-            words = wordcloud.process_text("\n".join(text))
-            elements = wordcloud.fit_words(words, font_path="DroidSansMono.ttf")
-            wordcloud.draw(elements, tmpfn, font_path="DroidSansMono.ttf")
+            #words = wordcloud.process_text("\n".join(text))
+            #elements = wordcloud.fit_words(words, font_path="DroidSansMono.ttf")
+            #wordcloud.draw(elements, tmpfn, font_path="DroidSansMono.ttf")
+            wc = wordcloud.WordCloud(font_path="DroidSansMono.ttf").generate("\n".join(text))
+            wc.to_file(tmpfn)
         return '<img src="%s" title="%s %s functions" width="250px">'%(tmpfn, metaid, htypetxt)
             
     def get_protein_info(self, metaid, short=1):

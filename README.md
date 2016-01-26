@@ -60,7 +60,9 @@ orthologs, paralogs = m.get_orthologs_and_paralogs(protid)
 
 # get protids of all orthologs
 protids = [protid for taxid, odata in orthologs.iteritems() for protid, extid, CS, EL, noTrees, dbInfo, coOrthologs in odata]
-# get fasta sequences
+# add query
+protids.append(m.get_metaid('TP63'))
+# get fasta sequences of all orthologs
 fastas = [m.get_fasta(protid) for protid in protids]
 
 ```

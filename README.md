@@ -59,9 +59,10 @@ orthologs, paralogs = m.get_orthologs_and_paralogs(protid)
 ##* or co-paralogs for paralogs
 
 # get protids of all orthologs
-protids = [metaid for taxid, odata in orthologs.iteritems() for metaid, extid, CS, EL, noTrees, dbInfo, coOrthologs in odata]
-# add query
-protids.append(protid)
+protids = [protid]
+for taxid, odata in orthologs.iteritems():
+    for metaid, extid, CS, EL, noTrees, dbInfo, coOrthologs in odata:
+        protids.append(metaid)
 # get fasta sequences of all orthologs
 fastas = [m.get_fasta(metaid) for metaid in protids]
 

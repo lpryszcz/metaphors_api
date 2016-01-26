@@ -58,4 +58,9 @@ orthologs, paralogs = m.get_orthologs_and_paralogs(protid)
 ## co-orthologs: protid and consistency_score of each co-ortholog
 * or co-paralogs for paralogs
 
+# get protids of all orthologs
+protids = [protid for taxid, odata in orthologs.iteritems() for protid, extid, CS, EL, noTrees, dbInfo, coOrthologs in odata]
+# get fasta sequences
+fastas = [m.get_fasta(protid) for protid in protids]
+
 ```

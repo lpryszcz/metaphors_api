@@ -56,13 +56,13 @@ orthologs, paralogs = m.get_orthologs_and_paralogs(protid)
 # orthologs = { taxid: [ [ protid, extid, consistency_score, evidence_level, no_of_tress, db_info, co-orthologs* ] ] }
 ## db_info: consistency_score and no_of_trees from PhylomeDB, Ensembl, EggNOG, OrthoMCL, TreeFAM and Hogenome
 ## co-orthologs: protid and consistency_score of each co-ortholog
-* or co-paralogs for paralogs
+##* or co-paralogs for paralogs
 
 # get protids of all orthologs
-protids = [protid for taxid, odata in orthologs.iteritems() for protid, extid, CS, EL, noTrees, dbInfo, coOrthologs in odata]
+protids = [metaid for taxid, odata in orthologs.iteritems() for metaid, extid, CS, EL, noTrees, dbInfo, coOrthologs in odata]
 # add query
-protids.append(m.get_metaid('TP63'))
+protids.append(protid)
 # get fasta sequences of all orthologs
-fastas = [m.get_fasta(protid) for protid in protids]
+fastas = [m.get_fasta(metaid) for metaid in protids]
 
 ```

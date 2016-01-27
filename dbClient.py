@@ -285,7 +285,6 @@ class metaphors(object):
 
     def get_tagcloud(self, metaid, go_terms):
         """Return html link to tag cloud"""
-        import matplotlib.pyplot as plt
         htypetxt = ""
         if type(metaid) is str:
             htypetxt = metaid.split("_")[-1]

@@ -530,6 +530,57 @@ class metaphors(object):
             return otable.asTXT()
 
     ##GET ORTHOLOGS
+    def get_paralogs(self, protid, csth=0.5, elth=1, extdbs=[], homtype=0, compare="<"):
+        """Return dictionary of paralogs.
+
+        Each dictionary contain taxid as key and then list of orthologs/paralogs
+        is given. For each ortholog/paralog, metaid, CS,
+        database signals (dbid:orhtology_trees,all_trees) and list of
+        co-orthologs/co-paralogs with respective consistecy scores are given.
+        """
+        return self.get_orthologs(protid, 1-csth, elth, extdbs, homtype, compare)
+        
+    def get_orthologs(self, protid, csth=0.5, elth=1, extdbs=[], homtype=1, compare=">="):
+        """Return dictionary of orthologs.
+        
+        Each dictionary contain taxid as key and then list of orthologs/paralogs
+        is given. For each ortholog/paralog, metaid, CS,
+        database signals (dbid:orhtology_trees,all_trees) and list of
+        co-orthologs/co-paralogs with respective consistecy scores are given.
+        """
+        homologs = {}
+        #get taxid and internal query
+        protid1 = self.get_metaid(protid)
+        if not protid1: 
+            return homologs
+        taxid = self.get_taxid(protid1)
+        cmd = """SELECT taxid, h.protid2, i.extid, h.CS, h.sources, h2.protid1, h2.CS
+        FROM homologs_%s AS h JOIN homologs_%s AS h2 ON h.protid2=h2.protid2
+        JOIN protid2taxid AS t ON h.protid2=t.protid
+        LEFT JOIN uniprot AS i ON h.protid2=i.protid
+        WHERE h.protid1 = %s AND h.CS %s %s AND h2.CS %s %s
+        """%(taxid, taxid, protid1, compare, csth, compare, csth)
+        pprotid2 = [] 
+        for taxid2, protid2, extid2, cs, sources, coprotid, cocs in self._fetch(cmd): 
+            #skip results not passing EL criteria etc
+            include = self._include(sources, csth, elth, extdbs, homtype)
+            if not include: 
+                continue
+            trees, el, css = include
+            #add homologs info only once for each protid2
+            if not pprotid2 or protid2 != pprotid2[-1]:
+                #add taxa if not yet added
+                if taxid2 not in homologs:
+                    homologs[taxid2] = []
+                #store in homologs
+                homologs[taxid2].append([protid2, extid2, cs, el, trees, css, []])
+                #update pprotid
+                pprotid2.append(protid2)
+            #add co-homologs different than query! # show_structure == '1' 
+            if coprotid != protid1:
+                homologs[taxid2][-1][-1].append((coprotid, cocs))
+        return homologs
+
     def get_orthologs_and_paralogs(self, protid, csth=0.5, elth=1, extdbs=[]):
         """Return dictionary of orthologs and paralogs.
         Each dictionary contain taxid as key and then list of orthologs/paralogs
@@ -583,6 +634,8 @@ class metaphors(object):
 
     def get_orthologs_between_two_species_table(self, taxid1, taxid2, csth=0.5, elth=1):
         """Return formatted orthology table between two species """
+        # 1.3M entries for YEAST-vs-CANAL due to id_conversion                                                                           
+        return "Work in progress... Coming soon!"          
         #convert species names into taxid
         if not str(taxid1).isdigit():
             if not taxid1 in self.name2taxid:
@@ -715,15 +768,6 @@ class metaphors(object):
             if not protid1 in orthologs:
                 orthologs[protid1] = []
             orthologs[protid1].append(data_list)
-            '''#update coorthologs
-            if not protid2 in p2coorthologs:
-                p2coorthologs[protid2] = []
-            p2coorthologs[protid2].append((protid1, cs))
-        #add co-orthologs
-        for protid1, data in d.iteritems():
-            for i in range(len(data)):
-                protid2 = data[i][0]
-                d[protid1][i][-1] = p2coorthologs[protid2]'''
         return orthologs
         
     def _include(self, sources, csth, elth, extdbs, homtype, exclude_db_list=[]):
@@ -760,9 +804,13 @@ class metaphors(object):
                     otrees += round(cs/t)
                     trees  += t
                 cs = otrees * 1.0 / trees
-                external_data_list[i] = (cs, trees)
             else:
-                external_data_list[i] = external_data_list[i][0]
+                cs, trees = external_data_list[i][0]
+            # paralogy
+            if homtype == 0:
+                cs = 1-cs
+            external_data_list[i] = (cs, trees)
+
             
         #CHECK IF GIVEN DATABASE CONFIRM PREDICTION
         i = 0
@@ -772,15 +820,9 @@ class metaphors(object):
                 if not signal:
                     return
                 cs, trees = signal
-                #for orthology predictions
-                if homology_type == 1:
-                    if cs < csth:
-                        # reject prediction if it's not confirmed by particular db, or phylomes no < 1
-                        return
-                #for paralogy predictions
-                else: 
-                    if 1-cs < csth:
-                        return 
+                if cs < csth:
+                    # reject prediction if it's not confirmed by particular db, or phylomes no < 1
+                    return
             i += 1
             
         # CHECK EVIDENCE LEVEL AND exclude_db_list criterium
@@ -802,70 +844,6 @@ class metaphors(object):
 
         if _include:
             return tottrees, el, external_data_list
-
-    '''
-    def get_multi_orthologs( self,queries,taxids,csth=0.5,EL_th=1,external_dbs=[],homology_type=1,exclude_db_list=[] ):
-        """Return dictionary of orthology predictions for multiple queries
-        """
-        compare = '>='
-        queries_str = ''
-        species_str = ''
-        #select taxids
-        taxids    = set(taxids)
-        #search for paralogs if homology_type==0
-        if homology_type == 0:
-            compare = '<'
-        #define vars
-        taxid = None
-        sp_err = 0
-        queries_dict = {}
-        orthologs_multi = {}
-        species_with_homologs = [ ]
-        ###get query species from queries list
-        for q in queries:
-            query_list = self.get_id( q )
-            if not query_list[0]:
-                continue
-            queries_dict[q] = query_list
-            queries_str += " %s," % query_list[1][3:]
-            if not taxid:
-                taxid = query_list[0]
-            else:
-                new_taxid = query_list[0]
-                if new_taxid != taxid:
-                    sp_err += 1
-        #return nothing in not taxid for given query
-        if not taxid:
-            return orthologs_multi, sp_err, queries_dict, species_with_homologs 
-
-        queries_str = queries_str[:-1]
-        cmd = """SELECT taxid,h.protid1,h.protid2,cs,sources
-                    FROM `homologs_%s` AS h JOIN protid2taxid AS pt ON h.protid2=pt.protid
-                    WHERE protid1 IN ( %s ) AND cs %s %s""" % ( taxid,queries_str,compare,csth ) 
-        if self.cursor.execute( cmd ): 
-            for taxid2,protid1,protid2,cs,sources in self.cursor.fetchall():
-                #skip if not of interest
-                if taxids and taxid and taxid2 not in taxids:
-                    continue
-                #skip results not passing EL criteria etc
-                include = self._include( sources,csth,exclude_db_list,EL_th,external_dbs,homology_type )
-                if not include:
-                    continue
-                trees,el,css = include 
-                data = ( protid2,cs )
-                #add protid1 if not yet added
-                if protid1 not in orthologs_multi:
-                    orthologs_multi[protid1] = {}
-                #add taxid2 if not yet added
-                if taxid2 not in orthologs_multi[protid1]:
-                    orthologs_multi[protid1][taxid2] = []
-                #store orthologs
-                orthologs_multi[protid1][taxid2].append( data )
-                #add taxid2 to species_with_homologs
-                if taxid2 not in species_with_homologs:
-                    species_with_homologs.append( taxid2 )
-        return orthologs_multi,sp_err,queries_dict,species_with_homologs
-    '''
 
     ###VARIABLES SETTINGS
     def _init_db_variables(self):

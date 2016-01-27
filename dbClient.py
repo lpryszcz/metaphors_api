@@ -299,9 +299,7 @@ class metaphors(object):
                     text.append(name)
             if not text:
                 return "No GO terms found!"
-            #words = wordcloud.process_text("\n".join(text))
-            #elements = wordcloud.fit_words(words, font_path="DroidSansMono.ttf")
-            #wordcloud.draw(elements, tmpfn, font_path="DroidSansMono.ttf")
+            # generate wordcloud
             wc = wordcloud.WordCloud(font_path="DroidSansMono.ttf").generate("\n".join(text))
             wc.to_file(tmpfn)
         return '<img src="%s" title="%s %s functions" width="250px">'%(tmpfn, metaid, htypetxt)
@@ -454,7 +452,7 @@ class metaphors(object):
         #add short protein info
         header = self.get_protein_info(metaid, 2)
         #get orthologs
-        orthologs, paralogs = self.get_orthologs_and_paralogs(metaid)
+        orthologs = self.get_orthologs(metaid)
         if not orthologs:
             return header+"<b>No %ss have been found.</b>"%htypetxt
         header += "<b>%s %ss in %s species</b>\n"%(sum(len(o) for o in orthologs.itervalues()), \

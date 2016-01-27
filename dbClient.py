@@ -4,10 +4,10 @@
 import MySQLdb, os, re, random, sys
 from _mysql_exceptions import OperationalError
 from htmlTable import orthologyTable
-#import MySQLdb.cursors as cursors
-#import word cloud - two paths needed in cgenomics
+#import word cloud & numpy - two paths needed in cgenomics
 sys.path.append('/home/lpryszcz/src/python/site-packages')
 sys.path.insert(0,'/home/lpryszcz/src/python/site-packages/numpy-1.8.1-py2.6-linux-x86_64.egg')
+sys.path.insert(0,'/home/lpryszcz/src/python/site-packages/wordcloud-1.2-py2.6-linux-x86_64.egg')
 TAGCLOUD = False
 try:
     import wordcloud
@@ -238,8 +238,8 @@ class metaphors(object):
         """Return gene description"""
         cmd = """SELECT description FROM protid2description WHERE protid=%s"""%metaid
         if self._fetch(cmd, 1):
-            return "; ".join(x.split("=")[1].split(';')[0]
-                             for x in self._fetch(cmd, 1)[0].split(': ')[1:7:2])
+            return "; ".join(x.split("=")[1]
+                             for x in self._fetch(cmd, 1)[0].split(';') if "=" in x)
         return 
 
     def get_GO(self, metaids):

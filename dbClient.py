@@ -21,7 +21,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.utf8')
 class metaphors(object):
     """ Connect to metaPhors database. Return cursor object. """
     def __init__(self, db="metaphors_201601", user="script", passwd="python", \
-                 host="cgenomics.org", port=4042):
+                 host="cgenomics.crg.es", port=4042):
         self.mysqldb = db
         self.user    = user
         self.passwd  = passwd

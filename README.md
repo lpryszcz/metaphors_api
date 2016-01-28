@@ -52,7 +52,8 @@ go = m.get_GO(protid)
 go['molecular_function']
 
 # get orthologs at CS cut-off of 0.5
-orthologs, paralogs = m.get_orthologs_and_paralogs(protid)
+orthologs = m.get_orthologs(protid)
+# or: orthologs, paralogs = m.get_orthologs_and_paralogs(protid) 
 # orthologs = { taxid: [ [ protid, extid, consistency_score, evidence_level, no_of_tress, db_info, co-orthologs* ] ] }
 ## db_info: consistency_score and no_of_trees from PhylomeDB, Ensembl, EggNOG, OrthoMCL, TreeFAM and Hogenome
 ## co-orthologs: protid and consistency_score of each co-ortholog

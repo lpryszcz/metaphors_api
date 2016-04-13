@@ -98,7 +98,11 @@ class metaphors(object):
         #add sp code
         if spcode:
             taxid = self.get_taxid(metaid)
-            code, name = self.species[taxid][:2]
+            # problem with 218847
+            if taxid not in self.species:
+                sys.stderr.write('[WARNING] Cannot retrieve species information for metaid: %s\n'%metaid)
+                return "%s%8s"%(pre, metaid)
+            code, name = self.species[taxid][:2] 
             fullid = "%s%8s_%s"%(pre, metaid, code)
         else:
             fullid = "%s%8s"%(pre, metaid)

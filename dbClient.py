@@ -631,8 +631,6 @@ class metaphors(object):
 
     def get_orthologs_between_two_species_table(self, taxid1, taxid2, csth=0.5, elth=1):
         """Return formatted orthology table between two species """
-        # 1.3M entries for YEAST-vs-CANAL due to id_conversion                                                                           
-        return "Work in progress... Coming soon!"          
         #convert species names into taxid
         if not str(taxid1).isdigit():
             if not taxid1 in self.name2taxid:
@@ -746,8 +744,9 @@ class metaphors(object):
         """
         orthologs, p2coorthologs = {}, {}
         compare = '>='
+        # searching for paralogs
         if homtype == 0:
-            compare = '<' #searching for paralogs
+            compare = '<' 
         cmd="""SELECT protid1, p1.extid, protid2, p2.extid, CS, sources
         FROM `homologs_%s` AS h JOIN protid2taxid AS t ON h.protid2=t.protid
         LEFT JOIN uniprot AS p1 ON protid1=p1.protid
